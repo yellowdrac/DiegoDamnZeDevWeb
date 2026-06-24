@@ -1,5 +1,6 @@
 :root {
-  /* dark (default) — black / white / gold */
+  /* dark only — black / white / accent. Accent (--gold/--gold2) is set at
+     runtime from src/config/theme.ts; values below are the fallback. */
   --bg: #0a0a0b;
   --panel: #141414;
   --ink: #f4f1ea;
@@ -9,17 +10,6 @@
   --gold2: #ffe6a6;
   --soft: #171513;
 }
-html[data-theme="light"] {
-  /* light — white / black / gold */
-  --bg: #f6f4ee;
-  --panel: #ffffff;
-  --ink: #1a1714;
-  --muted: #6b6458;
-  --line: #e4dfd2;
-  --gold: #a87d1a;
-  --gold2: #caa23e;
-  --soft: #f1ede2;
-}
 
 * {
   box-sizing: border-box;
@@ -28,6 +18,14 @@ html[data-theme="light"] {
 }
 html {
   scroll-behavior: smooth;
+  /* Native scrollbar hidden — the ProgressRail is the only scroll indicator. */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* old Edge / IE */
+}
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none; /* Chrome / Safari */
 }
 body {
   background: var(--bg);
@@ -80,19 +78,6 @@ nav {
   gap: 14px;
   align-items: center;
 }
-.toggle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  background: rgba(0, 0, 0, 0.3);
-  color: #e9e4d8;
-  border-radius: 30px;
-  padding: 7px 12px;
-  font-size: 12px;
-  cursor: pointer;
-  font-family: inherit;
-}
 .cv {
   color: #0a0a0b;
   background: var(--gold);
@@ -102,14 +87,14 @@ nav {
   font-size: 13px;
 }
 
-/* ===== SCROLLYTELLING STAGE ===== */
+/* ===== HERO STAGE (single screen) ===== */
 .scrollytell {
   position: relative;
-  height: 320vh;
+  height: 100vh;
   background: #070708;
 }
 .stage {
-  position: sticky;
+  position: relative;
   top: 0;
   height: 100vh;
   overflow: hidden;
@@ -120,7 +105,7 @@ nav {
   position: absolute;
   inset: 0;
   z-index: 0;
-  opacity: 0.18;
+  opacity: 0.5;
   width: 100%;
   height: 100%;
 }
@@ -193,12 +178,14 @@ nav {
   line-height: 1.02;
   letter-spacing: -0.02em;
   color: #f4f1ea;
+  text-shadow: 0 2px 22px rgba(0, 0, 0, 0.6);
 }
 .chapter p {
   font-size: 16px;
   color: #cdc7bb;
   margin-top: 16px;
   max-width: 420px;
+  text-shadow: 0 1px 16px rgba(0, 0, 0, 0.55);
 }
 .decode-wrap {
   position: relative;
@@ -233,25 +220,6 @@ nav {
   padding: 4px 9px;
   border-radius: 6px;
 }
-.progress {
-  position: absolute;
-  bottom: 64px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 5;
-  display: flex;
-  gap: 10px;
-}
-.progress i {
-  width: 28px;
-  height: 3px;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.2);
-  transition: 0.3s;
-}
-.progress i.on {
-  background: var(--gold);
-}
 .scrollcue {
   position: absolute;
   bottom: 28px;
@@ -262,6 +230,86 @@ nav {
   font-size: 10.5px;
   letter-spacing: 0.24em;
   text-transform: uppercase;
+}
+
+/* ===== PROGRESS RAIL (modern scrollbar companion) ===== */
+.prail {
+  position: fixed;
+  right: 14px;
+  top: 120px;
+  bottom: 120px;
+  width: 24px;
+  z-index: 30;
+  pointer-events: none;
+}
+.prail-track,
+.prail-fill {
+  position: absolute;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  border-radius: 2px;
+}
+.prail-track {
+  top: 0;
+  bottom: 0;
+  background: color-mix(in srgb, var(--gold) 16%, transparent);
+}
+.prail-fill {
+  top: 0;
+  background: linear-gradient(var(--gold2), var(--gold));
+}
+.prail-cap {
+  position: absolute;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 10px 1px color-mix(in srgb, var(--gold) 70%, transparent);
+}
+.prail-tick {
+  position: absolute;
+  left: 50%;
+  width: 24px;
+  height: 40px;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.prail-tick::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--gold) 22%, transparent);
+  transition: transform 0.25s, background 0.25s, box-shadow 0.25s;
+}
+.prail-tick.passed::before {
+  background: var(--gold);
+}
+.prail-tick.active::before {
+  transform: scale(1.4);
+  box-shadow: 0 0 8px 1px color-mix(in srgb, var(--gold) 70%, transparent);
+}
+.prail-tick:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+@media (max-width: 760px) {
+  .prail {
+    right: 6px;
+    top: 90px;
+    bottom: 90px;
+  }
 }
 
 /* ===== CONTENT ===== */
@@ -565,7 +613,7 @@ footer {
     padding: 0 20px;
   }
   .scrollytell {
-    height: 300vh;
+    height: 100vh;
   }
   .stage-inner {
     grid-template-columns: 1fr;

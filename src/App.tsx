@@ -1,15 +1,15 @@
-import { useTheme } from "./hooks/useTheme";
 import Nav from "./components/Nav";
 import Hero from "./components/Hero";
 import Content from "./components/Content";
+import ProgressRail from "./components/ProgressRail";
 
 export default function App() {
-  const { theme, toggle } = useTheme();
   return (
     <>
-      <Nav theme={theme} onToggle={toggle} />
+      <Nav />
       <Hero />
       <Content />
+      <ProgressRail />
     </>
   );
 }

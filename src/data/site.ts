@@ -21,25 +21,11 @@ export interface Chapter {
 
 export const chapters: Chapter[] = [
   {
-    eyebrow: "01 — Full-stack developer",
+    eyebrow: "Full-stack developer",
     title: ["I build software,", "front to back."],
     text: "React, .NET, and Node — I design, build, and ship complete products, not just pieces.",
     visual: "code",
     tag: "// build",
-  },
-  {
-    eyebrow: "02 — Real-world impact",
-    title: ["Research paper", "→ factory floor."],
-    text: "I turned an academic optimization paper into a production algorithm that cut material waste — measured on the plant floor.",
-    visual: "bars",
-    tag: "// impact",
-  },
-  {
-    eyebrow: "03 — Track record",
-    title: ["Award-winning.", "Shipped for real."],
-    text: "An award-winning system, 30+ production fixes, 12 features shipped, and clients in the U.S. and Italy.",
-    visual: "star",
-    tag: "// shipped",
   },
 ];
 
