@@ -78,6 +78,27 @@ nav {
   gap: 14px;
   align-items: center;
 }
+.palette {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+.swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.swatch:hover {
+  transform: scale(1.18);
+}
+.swatch.on {
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--ink);
+}
 .cv {
   color: #0a0a0b;
   background: var(--gold);
@@ -190,11 +211,11 @@ nav {
 .decode-wrap {
   position: relative;
   aspect-ratio: 1/1;
-  border: 1px solid rgba(230, 180, 80, 0.3);
+  border: 1px solid color-mix(in srgb, var(--gold) 30%, transparent);
   border-radius: 14px;
   overflow: hidden;
   background: #0c0b09;
-  box-shadow: 0 0 60px -20px rgba(230, 180, 80, 0.4);
+  box-shadow: 0 0 60px -20px color-mix(in srgb, var(--gold) 45%, transparent);
 }
 .decode {
   width: 100%;
@@ -216,7 +237,7 @@ nav {
   font-size: 11px;
   color: var(--gold);
   background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(230, 180, 80, 0.3);
+  border: 1px solid color-mix(in srgb, var(--gold) 30%, transparent);
   padding: 4px 9px;
   border-radius: 6px;
 }
@@ -608,6 +629,13 @@ footer {
 @media (max-width: 760px) {
   nav {
     padding: 16px 20px;
+  }
+  .palette {
+    gap: 5px;
+  }
+  .swatch {
+    width: 13px;
+    height: 13px;
   }
   .wrap {
     padding: 0 20px;

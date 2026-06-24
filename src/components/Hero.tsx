@@ -1,19 +1,22 @@
 import { useEffect, useRef } from "react";
 import { chapters } from "../data/site";
+import { COLOR_PALETTE, type AccentName } from "../config/theme";
 import { createWarpTunnel, createDecoder } from "../lib/matrix";
 
-export default function Hero() {
+export default function Hero({ accent }: { accent: AccentName }) {
   const rainRef = useRef<HTMLCanvasElement>(null);
   const decodeRef = useRef<HTMLCanvasElement>(null);
 
+  // Re-create the canvases when the accent changes so stars + decoder recolor live.
   useEffect(() => {
     const tunnelCanvas = rainRef.current;
     const decodeCanvas = decodeRef.current;
     if (!tunnelCanvas || !decodeCanvas) return;
 
+    const accentHex = COLOR_PALETTE[accent];
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const tunnel = createWarpTunnel(tunnelCanvas);
-    const decoder = createDecoder(decodeCanvas);
+    const tunnel = createWarpTunnel(tunnelCanvas, accentHex);
+    const decoder = createDecoder(decodeCanvas, accentHex);
 
     tunnel.resize();
     decoder.resize();
@@ -50,7 +53,7 @@ export default function Hero() {
       tunnel.dispose();
       decoder.dispose();
     };
-  }, []);
+  }, [accent]);
 
   const c = chapters[0];
 

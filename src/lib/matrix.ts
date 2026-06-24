@@ -11,9 +11,9 @@ type WarpParticle = { bx: number; by: number; z: number; s: number };
  * rush to scroll velocity. Honors reduced-motion / low-power devices by
  * rendering a single static depth field instead. Colors follow the app accent.
  */
-export function createWarpTunnel(canvas: HTMLCanvasElement) {
+export function createWarpTunnel(canvas: HTMLCanvasElement, accent = liveAccent()) {
   const ctx = canvas.getContext("2d")!;
-  const base = liveAccent(); // accent color (e.g. gold) from the app settings
+  const base = accent; // accent color (e.g. gold) chosen by the user
   const bright = shade(base, 0.55); // near stars glow brighter
 
   const FOCAL = 0.5; // projection focal length (in half-canvas units)
@@ -161,11 +161,11 @@ export function createWarpTunnel(canvas: HTMLCanvasElement) {
 }
 
 /** Pixel-decode panel: a gold visual that resolves from blocky pixels and can re-glitch. */
-export function createDecoder(canvas: HTMLCanvasElement) {
+export function createDecoder(canvas: HTMLCanvasElement, accent = liveAccent()) {
   const ctx = canvas.getContext("2d")!;
   const target = document.createElement("canvas");
   const tmp = document.createElement("canvas");
-  const base = liveAccent(); // accent color from the app settings
+  const base = accent; // accent color chosen by the user
   const bright = shade(base, 0.55);
   const deep = shade(base, -0.45);
   let current: Visual = "code";
