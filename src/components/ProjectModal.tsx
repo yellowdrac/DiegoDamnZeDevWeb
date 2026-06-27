@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { Project } from "../data/site";
+import { useLang } from "../i18n/lang";
 
 export default function ProjectModal({
   project,
@@ -8,6 +9,7 @@ export default function ProjectModal({
   project: Project | null;
   onClose: () => void;
 }) {
+  const { t } = useLang();
   const dialogRef = useRef<HTMLDivElement>(null);
   const lastFocused = useRef<HTMLElement | null>(null);
 
@@ -42,7 +44,7 @@ export default function ProjectModal({
         ref={dialogRef}
         onClick={(e) => e.stopPropagation()}
       >
-        <button className="pmodal-close" onClick={onClose} aria-label="Close">
+        <button className="pmodal-close" onClick={onClose} aria-label={t.ui.close}>
           ✕
         </button>
 
@@ -65,7 +67,7 @@ export default function ProjectModal({
 
           <p className="pmodal-lead">{project.overview}</p>
 
-          <div className="pmodal-h3">What I built</div>
+          <div className="pmodal-h3">{t.ui.whatIBuilt}</div>
           <div className="pmodal-feat">
             {project.features.map((f) => (
               <div key={f}>{f}</div>
@@ -75,12 +77,12 @@ export default function ProjectModal({
           <div className="pmodal-actions">
             {project.links.live && (
               <a className="btn solid" href={project.links.live} target="_blank" rel="noreferrer">
-                View live ↗
+                {t.ui.viewLive}
               </a>
             )}
             {project.links.code && (
               <a className="btn" href={project.links.code} target="_blank" rel="noreferrer">
-                View code
+                {t.ui.viewCode}
               </a>
             )}
           </div>

@@ -1,8 +1,12 @@
-import { metrics, profile, stack } from "../data/site";
+import { profile, stack } from "../data/site";
+import { useLang } from "../i18n/lang";
 import Reveal from "./Reveal";
 import Work from "./Work";
 
 export default function Content() {
+  const { t } = useLang();
+  const contactSub = t.contact.sub.replace("{location}", profile.location);
+
   return (
     <main>
       <div className="wrap">
@@ -20,25 +24,20 @@ export default function Content() {
           <Reveal>
             <aside className="highlight">
               <div>
-                <div className="hl-label">★ Career highlight</div>
-                <div className="hl-text">
-                  I turned an academic research paper into a working production algorithm that
-                  reduced material waste in a factory.
-                </div>
-                <div className="hl-sub">
-                  Real, measured impact on the plant floor — not a side project.
-                </div>
+                <div className="hl-label">{t.intro.highlightLabel}</div>
+                <div className="hl-text">{t.intro.hlText}</div>
+                <div className="hl-sub">{t.intro.hlSub}</div>
               </div>
               <div className="viz">
-                <div className="vtitle">Material waste — production line</div>
+                <div className="vtitle">{t.intro.vizTitle}</div>
                 <div className="vbar before">
-                  <span className="name">Before</span>
+                  <span className="name">{t.intro.before}</span>
                   <span className="track">
                     <span className="fill" />
                   </span>
                 </div>
                 <div className="vbar after">
-                  <span className="name">After</span>
+                  <span className="name">{t.intro.after}</span>
                   <span className="track">
                     <span className="fill" />
                   </span>
@@ -49,7 +48,7 @@ export default function Content() {
 
           <Reveal>
             <div className="metrics">
-              {metrics.map((m) => (
+              {t.metrics.map((m) => (
                 <div key={m.label} className="metric">
                   <div className="num">{m.num}</div>
                   <div className="lbl">{m.label}</div>
@@ -63,8 +62,8 @@ export default function Content() {
 
         <Reveal>
           <div className="contact">
-            <h2>Let's work together.</h2>
-            <p>Open to full-stack roles · Remote-friendly · Based in {profile.location}</p>
+            <h2>{t.contact.title}</h2>
+            <p>{contactSub}</p>
             <a className="btn solid" href={`mailto:${profile.email}`}>
               {profile.email}
             </a>

@@ -1,24 +1,29 @@
 import { profile } from "../data/site";
-import type { AccentName } from "../config/theme";
+import { useLang } from "../i18n/lang";
 import AccentPicker from "./AccentPicker";
+import LangToggle from "./LangToggle";
 
 export default function Nav({
   accent,
   onAccent,
 }: {
-  accent: AccentName;
-  onAccent: (name: AccentName) => void;
+  accent: string;
+  onAccent: (hex: string) => void;
 }) {
+  const { t } = useLang();
   return (
     <nav>
-      <div className="logo">
-        DIEGO <b>DAMIAN</b>
-      </div>
-      <div className="navright">
-        <AccentPicker accent={accent} onAccent={onAccent} />
-        <a className="cv" href={profile.cv}>
-          Download CV
-        </a>
+      <div className="nav-inner">
+        <div className="logo">
+          DIEGO <b>DAMIAN</b>
+        </div>
+        <div className="navright">
+          <LangToggle />
+          <AccentPicker accent={accent} onAccent={onAccent} />
+          <a className="cv" href={profile.cv}>
+            {t.nav.cv}
+          </a>
+        </div>
       </div>
     </nav>
   );

@@ -1,19 +1,30 @@
-import { useState } from "react";
-import { filters, projects, type Project } from "../data/site";
+import { useMemo, useState } from "react";
+import { FILTER_ALL, FILTER_KEYS, projectsBase, type Project } from "../data/site";
+import { useLang } from "../i18n/lang";
 import Reveal from "./Reveal";
 import ProjectModal from "./ProjectModal";
 
 export default function Work() {
-  const [active, setActive] = useState("All");
+  const { t } = useLang();
+  const [active, setActive] = useState(FILTER_ALL);
   const [selected, setSelected] = useState<Project | null>(null);
-  const shown = active === "All" ? projects : projects.filter((p) => p.stacks.includes(active));
+
+  // Merge stable project data with the active language's translated text.
+  const projects = useMemo<Project[]>(
+    () => projectsBase.map((p) => ({ ...p, ...t.projects[p.id] })),
+    [t]
+  );
+
+  const filters = [FILTER_ALL, ...FILTER_KEYS];
+  const shown =
+    active === FILTER_ALL ? projects : projects.filter((p) => p.stacks.includes(active));
 
   return (
     <section className="work">
       <Reveal>
         <div className="sechead">
-          <h2>Selected Work</h2>
-          <p>Three products I designed, built, and shipped. Click any for details.</p>
+          <h2>{t.work.head}</h2>
+          <p>{t.work.sub}</p>
         </div>
       </Reveal>
 
@@ -26,7 +37,7 @@ export default function Work() {
               onClick={() => setActive(f)}
               aria-pressed={active === f}
             >
-              {f}
+              {f === FILTER_ALL ? t.work.all : f}
             </button>
           ))}
         </div>
@@ -34,12 +45,12 @@ export default function Work() {
 
       <div className="cards">
         {shown.map((p) => (
-          <Reveal key={p.name}>
+          <Reveal key={p.id}>
             <article
               className="card"
               role="button"
               tabIndex={0}
-              aria-label={`View ${p.name} details`}
+              aria-label={p.name}
               onClick={(e) => {
                 e.currentTarget.focus();
                 setSelected(p);
@@ -53,15 +64,15 @@ export default function Work() {
             >
               <div className="thumb">
                 {p.short}
-                {p.award && <span className="badge2">★ Award-winning</span>}
+                {p.award && <span className="badge2">{t.work.award}</span>}
               </div>
               <div className="cbody">
                 <h3>{p.name}</h3>
                 <p>{p.desc}</p>
                 <div className="tags">
-                  {p.tags.map((t) => (
-                    <span key={t} className="tag">
-                      {t}
+                  {p.tags.map((tg) => (
+                    <span key={tg} className="tag">
+                      {tg}
                     </span>
                   ))}
                 </div>

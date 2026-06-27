@@ -1,70 +1,106 @@
-import { useEffect, useRef } from "react";
-import { chapters } from "../data/site";
-import { COLOR_PALETTE, type AccentName } from "../config/theme";
-import { createWarpTunnel, createDecoder } from "../lib/matrix";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useLang } from "../i18n/lang";
+import { createPortal } from "../lib/portal";
+import LogoMorph from "./LogoMorph";
 
-export default function Hero({ accent }: { accent: AccentName }) {
-  const rainRef = useRef<HTMLCanvasElement>(null);
-  const decodeRef = useRef<HTMLCanvasElement>(null);
+export default function Hero({ accent }: { accent: string }) {
+  const fxRef = useRef<HTMLCanvasElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const portalRef = useRef<ReturnType<typeof createPortal> | null>(null);
+  const accentRef = useRef(accent);
+  accentRef.current = accent;
+  const { t } = useLang();
 
-  // Re-create the canvases when the accent changes so stars + decoder recolor live.
+  // Focus mode: slide the title out and let the logo + portal take center stage.
+  const [focused, setFocused] = useState(false);
+
+  // Burst the portal each time the logo morphs to the next tech.
+  const onMorph = useCallback(() => portalRef.current?.burst(), []);
+
+  // Create the WebGL portal once. Color updates go through setColor so we never
+  // tear down / recreate the WebGL context on an accent change.
   useEffect(() => {
-    const tunnelCanvas = rainRef.current;
-    const decodeCanvas = decodeRef.current;
-    if (!tunnelCanvas || !decodeCanvas) return;
+    const canvas = fxRef.current;
+    if (!canvas) return;
 
-    const accentHex = COLOR_PALETTE[accent];
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const tunnel = createWarpTunnel(tunnelCanvas, accentHex);
-    const decoder = createDecoder(decodeCanvas, accentHex);
+    let portal: ReturnType<typeof createPortal>;
+    try {
+      portal = createPortal(canvas, accentRef.current, wrapRef.current);
+    } catch {
+      return; // WebGL unavailable — leave the portal blank rather than crash
+    }
+    portalRef.current = portal;
+    portal.resize();
+    portal.start(reduce);
 
-    tunnel.resize();
-    decoder.resize();
-    decoder.setChapter(chapters[0].visual, reduce);
-    tunnel.start(reduce);
-
-    let lastY = window.scrollY;
+    // Pointer → portal (parallax + cursor repulsion). ndc relative to the canvas;
+    // rect is cached and refreshed on scroll/resize to stay cheap on mousemove.
+    let rect = canvas.getBoundingClientRect();
+    const updateRect = () => {
+      rect = canvas.getBoundingClientRect();
+    };
+    const onMove = (e: MouseEvent) => {
+      if (!rect.width || !rect.height) return;
+      const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      const ny = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
+      portal.setPointer(nx, ny);
+    };
 
     const onResize = () => {
-      tunnel.resize();
-      decoder.resize();
+      portal.resize();
+      updateRect();
     };
-    const onScroll = () => {
-      const y = window.scrollY;
-      tunnel.setScroll(y - lastY); // scroll velocity gives the stars a gentle rush
-      lastY = y;
-    };
+    const onScroll = () => updateRect();
     const onVisibility = () => {
-      if (document.hidden) tunnel.stop();
-      else tunnel.start(reduce);
+      if (document.hidden) portal.stop();
+      else if (!reduce) portal.start(false);
     };
-
     window.addEventListener("resize", onResize);
     window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("mousemove", onMove, { passive: true });
     document.addEventListener("visibilitychange", onVisibility);
-    const glitch = reduce ? undefined : window.setInterval(() => decoder.glitch(reduce), 5000);
 
     return () => {
       window.removeEventListener("resize", onResize);
       window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("mousemove", onMove);
       document.removeEventListener("visibilitychange", onVisibility);
-      if (glitch) clearInterval(glitch);
-      tunnel.stop();
-      tunnel.dispose();
-      decoder.dispose();
+      portalRef.current = null;
+      portal.dispose();
     };
+  }, []);
+
+  useEffect(() => {
+    portalRef.current?.setColor(accent);
   }, [accent]);
 
-  const c = chapters[0];
+  // While the logo slides/grows, re-frame the portal each frame for the duration
+  // of the CSS transition. The animated path also tracks via the portal's own
+  // loop; this also covers reduced-motion, where that loop isn't running.
+  useEffect(() => {
+    const portal = portalRef.current;
+    if (!portal) return;
+    let raf = 0;
+    const t0 = performance.now();
+    const tick = () => {
+      portal.realign();
+      if (performance.now() - t0 < 750) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [focused]);
+
+  const c = t.hero;
 
   return (
     <section className="scrollytell">
       <div className="stage">
-        <canvas className="rain" ref={rainRef} aria-hidden="true" />
+        <canvas className="portalfx" ref={fxRef} aria-hidden="true" />
         <div className="bar-top" />
         <div className="bar-bot" />
         <div className="vignette" />
-        <div className="stage-inner">
+        <div className={`stage-inner${focused ? " focused" : ""}`}>
           <div className="chapters">
             <div className="chapter active">
               <div className="ch-eyebrow">{c.eyebrow}</div>
@@ -80,14 +116,22 @@ export default function Hero({ accent }: { accent: AccentName }) {
             </div>
           </div>
 
-          <div className="decode-wrap">
-            <canvas className="decode" ref={decodeRef} aria-hidden="true" />
-            <div className="decode-scan" />
-            <div className="decode-tag">{c.tag}</div>
+          <div className="decode-wrap" ref={wrapRef}>
+            <LogoMorph accent={accent} onMorph={onMorph} />
           </div>
         </div>
 
-        <div className="scrollcue">Scroll to explore</div>
+        <button
+          type="button"
+          className="focus-toggle"
+          onClick={() => setFocused((f) => !f)}
+          aria-pressed={focused}
+        >
+          <span className="ft-arrow" aria-hidden="true">{focused ? "→" : "←"}</span>
+          {focused ? t.ui.showText : t.ui.focus}
+        </button>
+
+        <div className="scrollcue">{t.scrollcue}</div>
       </div>
     </section>
   );
