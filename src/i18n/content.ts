@@ -23,7 +23,7 @@ export interface Content {
   work: { head: string; sub: string; all: string; award: string };
   contact: { title: string; sub: string };
   scrollcue: string;
-  ui: { close: string; whatIBuilt: string; viewLive: string; viewCode: string; focus: string; showText: string };
+  ui: { close: string; whatIBuilt: string; viewLive: string; viewCode: string; focus: string; showText: string; lockRotation: string; unlockRotation: string };
   projects: Record<string, ProjectText>;
 }
 
@@ -71,6 +71,8 @@ export const content: Record<Lang, Content> = {
       viewCode: "View code",
       focus: "Focus",
       showText: "Show text",
+      lockRotation: "Lock rotation",
+      unlockRotation: "Unlock rotation",
     },
     projects: {
       acredipucp: {
@@ -158,6 +160,8 @@ export const content: Record<Lang, Content> = {
       viewCode: "Ver código",
       focus: "Enfocar",
       showText: "Ver texto",
+      lockRotation: "Bloquear rotación",
+      unlockRotation: "Desbloquear rotación",
     },
     projects: {
       acredipucp: {

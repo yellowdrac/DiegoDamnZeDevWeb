@@ -14,6 +14,12 @@ export default function Hero({ accent }: { accent: string }) {
   // Focus mode: slide the title out and let the logo + portal take center stage.
   const [focused, setFocused] = useState(false);
 
+  // Lock: freeze the mouse-driven rotation (particles + logo). Mirrored into a ref
+  // so the once-registered mousemove handler always sees the current value.
+  const [locked, setLocked] = useState(false);
+  const lockedRef = useRef(locked);
+  lockedRef.current = locked;
+
   // Burst the portal each time the logo morphs to the next tech.
   const onMorph = useCallback(() => portalRef.current?.burst(), []);
 
@@ -41,10 +47,19 @@ export default function Hero({ accent }: { accent: string }) {
       rect = canvas.getBoundingClientRect();
     };
     const onMove = (e: MouseEvent) => {
+      if (lockedRef.current) return; // rotation locked
       if (!rect.width || !rect.height) return;
       const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       const ny = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
       portal.setPointer(nx, ny);
+      // tilt the logo toward the cursor (~2× stronger), matching the portal's
+      // vertical sense. Clamp so leaving the canvas can't over-rotate it.
+      if (!reduce && wrapRef.current) {
+        const cx = Math.max(-1, Math.min(1, nx));
+        const cy = Math.max(-1, Math.min(1, ny));
+        wrapRef.current.style.setProperty("--logo-ry", `${(-cx * 60).toFixed(2)}deg`);
+        wrapRef.current.style.setProperty("--logo-rx", `${(-cy * 42).toFixed(2)}deg`);
+      }
     };
 
     const onResize = () => {
@@ -91,6 +106,17 @@ export default function Hero({ accent }: { accent: string }) {
     return () => cancelAnimationFrame(raf);
   }, [focused]);
 
+  // Locking snaps the portal + logo back to a neutral, un-tilted pose.
+  useEffect(() => {
+    if (!locked) return;
+    portalRef.current?.setPointer(0, 0);
+    const wrap = wrapRef.current;
+    if (wrap) {
+      wrap.style.setProperty("--logo-rx", "0deg");
+      wrap.style.setProperty("--logo-ry", "0deg");
+    }
+  }, [locked]);
+
   const c = t.hero;
 
   return (
@@ -98,7 +124,6 @@ export default function Hero({ accent }: { accent: string }) {
       <div className="stage">
         <canvas className="portalfx" ref={fxRef} aria-hidden="true" />
         <div className="bar-top" />
-        <div className="bar-bot" />
         <div className="vignette" />
         <div className={`stage-inner${focused ? " focused" : ""}`}>
           <div className="chapters">
@@ -121,17 +146,44 @@ export default function Hero({ accent }: { accent: string }) {
           </div>
         </div>
 
-        <button
-          type="button"
-          className="focus-toggle"
-          onClick={() => setFocused((f) => !f)}
-          aria-pressed={focused}
-        >
-          <span className="ft-arrow" aria-hidden="true">{focused ? "→" : "←"}</span>
-          {focused ? t.ui.showText : t.ui.focus}
-        </button>
-
-        <div className="scrollcue">{t.scrollcue}</div>
+        <div className="hero-controls">
+          <button
+            type="button"
+            className="focus-toggle"
+            onClick={() => setFocused((f) => !f)}
+            aria-pressed={focused}
+          >
+            <span className="ft-arrow" aria-hidden="true">{focused ? "→" : "←"}</span>
+            {focused ? t.ui.showText : t.ui.focus}
+          </button>
+          <button
+            type="button"
+            className={`lock-toggle${locked ? " on" : ""}`}
+            onClick={() => setLocked((v) => !v)}
+            aria-pressed={locked}
+            aria-label={locked ? t.ui.unlockRotation : t.ui.lockRotation}
+            title={locked ? t.ui.unlockRotation : t.ui.lockRotation}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="5" y="11" width="14" height="10" rx="2" />
+              {locked ? (
+                <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+              ) : (
+                <path d="M8 11V7a4 4 0 0 1 7.6-1.6" />
+              )}
+            </svg>
+          </button>
+        </div>
       </div>
     </section>
   );

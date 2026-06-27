@@ -519,9 +519,11 @@ export function createPortal(
     // slides/grows in focus mode (getBoundingClientRect already includes CSS transforms).
     align();
 
-    // parallax tilt toward the pointer (4× stronger) + slow auto-sway/spin
+    // parallax tilt toward the pointer (4× stronger) + slow auto-sway/spin.
+    // Y term is negated so the spin follows the cursor the same way the logo does
+    // (Three's rotation.y is the opposite sense of CSS rotateY for the same sign).
     const tx = BASE_TILT + clamp(pointerY, -1.2, 1.2) * 0.72;
-    const ty = Math.sin(ms * 0.00022) * 0.1 + clamp(pointerX, -1.2, 1.2) * 1.12;
+    const ty = Math.sin(ms * 0.00022) * 0.1 - clamp(pointerX, -1.2, 1.2) * 1.12;
     group.rotation.x += (tx - group.rotation.x) * 0.07;
     group.rotation.y += (ty - group.rotation.y) * 0.07;
     group.rotation.z = ms * 0.00004;
