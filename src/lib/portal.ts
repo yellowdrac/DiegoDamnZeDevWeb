@@ -193,12 +193,11 @@ export function createPortal(
         float t = uTime;
         // angular speed scales ~1/radius: inner dust whirls faster than the rim
         float ang = aAngle + t * aSpeed * (0.55 / (aRadius + 0.25));
-        // organic spiral breathing on the radius (two octaves), + burst push-out
-        float r = aRadius
-                + sin(t * aWob * 0.5 + aPhase) * 0.045
-                + sin(t * 0.175 + aPhase * 2.0) * 0.025
-                + uBurst * 0.35;
-        float z = aZ + sin(t * 0.5 + aPhase) * 0.06;
+        // pure rotation: constant radius/depth per particle — no radial breathing
+        // and no burst push-in/out. Particles only orbit; variety comes from each
+        // one's radius, speed and direction, not from pulsing.
+        float r = aRadius;
+        float z = aZ;
         vec3 pos = vec3(cos(ang) * r, sin(ang) * r, z);
         vec4 mv = modelViewMatrix * vec4(pos, 1.0);
         gl_Position = projectionMatrix * mv;
@@ -520,9 +519,9 @@ export function createPortal(
     // slides/grows in focus mode (getBoundingClientRect already includes CSS transforms).
     align();
 
-    // parallax tilt toward the pointer + slow spin
-    const tx = BASE_TILT + clamp(pointerY, -1.2, 1.2) * 0.18;
-    const ty = Math.sin(ms * 0.00022) * 0.1 + clamp(pointerX, -1.2, 1.2) * 0.28;
+    // parallax tilt toward the pointer (4× stronger) + slow auto-sway/spin
+    const tx = BASE_TILT + clamp(pointerY, -1.2, 1.2) * 0.72;
+    const ty = Math.sin(ms * 0.00022) * 0.1 + clamp(pointerX, -1.2, 1.2) * 1.12;
     group.rotation.x += (tx - group.rotation.x) * 0.07;
     group.rotation.y += (ty - group.rotation.y) * 0.07;
     group.rotation.z = ms * 0.00004;

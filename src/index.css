@@ -404,7 +404,7 @@ nav {
 }
 .focus-toggle {
   position: absolute;
-  left: 48px;
+  left: 34px;
   bottom: 72px;
   z-index: 4;
   display: inline-flex;
@@ -851,7 +851,7 @@ footer {
     transform: scale(1.4);
   }
   .focus-toggle {
-    left: 24px;
+    left: 17px;
     bottom: 64px;
   }
   .highlight {
